@@ -1,0 +1,291 @@
+<main> 
+<button class="keyboardQ" type="button" ontouchstart="adlib.play('cowbell');" onmousedown="adlib.play('cowbell');">Cowbell [q]</button>
+      <button class="keyboardW" type="button" ontouchstart="adlib.play('crash');" onmousedown="adlib.play('crash');">Crash [w]</button>
+      <button class="keyboardE" type="button" ontouchstart="adlib.play('hihat');" onmousedown="adlib.play('hihat');">Hihat Closed [e]</button>
+      <button class="keyboardR" type="button" ontouchstart="adlib.play('hihatopen');" onmousedown="adlib.play('hihatopen');">Hihat Open [r]</button><br/>
+      <button class="keyboardA" type="button" ontouchstart="adlib.play('kick');" onmousedown="adlib.play('kick');">Kick 1 [a]</button>
+      <button class="keyboardS" type="button" ontouchstart="adlib.play('snare1');" onmousedown="adlib.play('snare1');">Snare 1 [s]</button>
+      <button class="keyboardD" type="button" ontouchstart="adlib.play('snare2');" onmousedown="adlib.play('snare2');">Snare 2 [d]</button>
+      <button class="keyboardF" type="button" ontouchstart="adlib.play('rim');" onmousedown="adlib.play('rim');">Rimshot [f]</button><br/>
+</main>
+
+
+
+
+body {
+  text-align:center;
+  margin:16px;
+}
+
+main button {
+	background:linear-gradient(180deg, #333, #444);
+	border: 0.3em solid transparent;
+	height:8em;
+	width:8em;
+	display:inline-block;
+	margin:0.0;
+	padding:0;
+	font-weight: 200;
+	font-size: 1.25em;
+	font-family: 'Lato';
+	color:white;
+	//transition: border 0.1s ease-in-out;
+	box-shadow: 0.0em 0.0em 0.5em #222;
+}
+
+main button:active, main button.active {
+	border: 0.3em solid rgb(255,128,32);
+}
+main button:nth-child(2):active,main button:nth-child(2).active {
+	border: 0.3em solid #E7C697;
+}
+main button:nth-child(3):active,main button:nth-child(3).active {
+	border: 0.3em solid #0D98BA;
+}
+main button:nth-child(4):active,main button:nth-child(4).active {
+	border: 0.3em solid #1CD3A2;
+}
+main button:nth-child(5):active,main button:nth-child(5).active {
+	border: 0.3em solid #FCB4D5;
+}
+main button:nth-child(6):active,main button:nth-child(6).active {
+	border: 0.3em solid #8A795D;
+}
+main button:nth-child(7):active,main button:nth-child(7).active {
+	border: 0.3em solid #C0448F;
+}
+main button:nth-child(8):active,main button:nth-child(8).active {
+	border: 0.3em solid #AA00D0;
+}
+main button:nth-child(9):active,main button:nth-child(9).active {
+	border: 0.3em solid #45CEA2;
+}
+main button:nth-child(10):active,main button:nth-child(10).active {
+	border: 0.3em solid #1974D2;
+}
+
+
+
+
+main>ul.tiles li:nth-child(2) a {
+  background-color:#0D98BA;
+}
+main>ul.tiles li:nth-child(3) a {
+  background-color:#1CD3A2;
+}
+main>ul.tiles li:nth-child(4) a {
+  background-color:#FF7F49;
+}
+main>ul.tiles li:nth-child(5) a {
+  background-color:#FCB4D5;
+}
+main>ul.tiles li:nth-child(6) a {
+  background-color:#1CD3A2;
+}
+main>ul.tiles li:nth-child(7) a {
+  background-color:#1974D2;
+}
+main>ul.tiles li:nth-child(8) a {
+  background-color:#AAF0D;
+}
+main>ul.tiles li:nth-child(9) a {
+  background-color:#8E4585;
+}
+main>ul.tiles li:nth-child(10) a {
+  background-color:#8A795D;
+}
+
+main>ul.tiles li:nth-child(11) a {
+  background-color:#45CEA2;
+}
+main>ul.tiles li:nth-child(12) a {
+  background-color:#C0448F;
+}
+
+
+
+
+
+
+/* Chooses the available Audio API */
+window.AudioContext = window.AudioContext||window.webkitAudioContext;
+
+
+
+/* Our Audio Wrapper called 'AdLib' */
+var adlib = new function(){
+
+	/* What directory are the audio files stored? Defaults to root */
+	this.soundUrl = "";
+
+	/* Variable for the Web Audio API Context */
+	this.AudioContext = undefined;
+
+
+	/* Cache of audio buffers stored as a hashtable: buffer = audio['name'] */
+	this.audio = {};
+
+	/* Must be initalised before use */
+	this.init = function(config){
+
+		/* Parses configuration tags */
+		if(config != undefined){
+			/* Sets audio file directory */
+			if(config['urlPrefix'] != undefined){
+				adlib.soundUrl = config['urlPrefix'];
+			} 
+		}
+		/* Request a new AudioContext */
+		this.AudioContext = new AudioContext();	
+	}
+
+	/* Helper functions */
+	this.getTagFromURL = function(url,tag){
+		if(tag != undefined) return tag;
+		return adlib.getSingleURL(url);
+	}
+	this.getSingleURL = function(urls){
+		if(typeof(urls) == "string") return urls;
+		return urls[0];
+	}
+	this.getURLArray = function(urls){
+		if(typeof(urls) == "string") return [urls];
+		return urls;
+	}
+
+	/* Load audio file  */
+	this.load = function(urls,tag,cb){
+		var url = adlib.getSingleURL(urls);
+		var tag = adlib.getTagFromURL (urls,tag);
+		var request = new XMLHttpRequest();
+		request.open('GET', adlib.soundUrl + url, true);
+		request.responseType = 'arraybuffer';
+
+		request.onload = function() {
+		    adlib.AudioContext.decodeAudioData(request.response, function(buffer) {
+				adlib.audio[tag] = buffer;
+				if(cb!=undefined) cb();
+			}, adlib.errorLoadWebkitAudtioFile);
+		};
+		request.send();
+	}
+	this.errorLoadWebkitAudtioFile = function(e){
+		console.log('error');
+	}
+
+	/* Play one-off audio  */
+	this.play = function(tag, volume) {
+		if(volume==undefined) volume = 1.0;
+		var context = adlib.AudioContext;
+		var gainNode = context.createGain();
+		gainNode.gain.value=volume;
+		var buffer = adlib.audio[tag];
+		var source = context.createBufferSource();
+		source.buffer = buffer;   
+		source.connect(gainNode);       
+		gainNode.connect(context.destination);
+		source.start(0);                          
+	}
+}
+
+
+
+
+   
+ 
+
+
+
+
+
+
+$( document ).on( "keydown",
+	function(e) {
+		if(e.which == 81) {
+		  adlib.play('cowbell');
+		  $("button.keyboardQ").toggleClass('active');
+		}
+		if(e.which == 87) {
+		  adlib.play('crash');
+		  $("button.keyboardW").toggleClass('active');
+		}
+		if(e.which == 69) {
+		  adlib.play('hihat');
+		  $("button.keyboardE").toggleClass('active');
+		}
+		if(e.which == 82) {
+		  adlib.play('hihatopen');
+		  $("button.keyboardR").toggleClass('active');
+		}
+
+		if(e.which == 65) {
+		  adlib.play('kick');
+		  $("button.keyboardA").toggleClass('active');
+		}
+		if(e.which == 83) {
+		  adlib.play('snare1');
+		  $("button.keyboardS").toggleClass('active');
+		}
+		if(e.which == 68) {
+		  adlib.play('snare2');
+		  $("button.keyboardD").toggleClass('active');
+		}
+		if(e.which == 70) {
+		  adlib.play('rim');
+		  $("button.keyboardF").toggleClass('active');
+		}
+
+	}
+);
+
+
+
+$( document ).on( "keyup",
+	function(e) {
+		if(e.which == 81) {
+		  $("button.keyboardQ").toggleClass('active');
+		}
+		if(e.which == 87) {
+		  $("button.keyboardW").toggleClass('active');
+		}
+		if(e.which == 69) {
+		  $("button.keyboardE").toggleClass('active');
+		}
+		if(e.which == 82) {
+		  $("button.keyboardR").toggleClass('active');
+		}
+
+		if(e.which == 65) {
+		  $("button.keyboardA").toggleClass('active');
+		}
+		if(e.which == 83) {
+		  $("button.keyboardS").toggleClass('active');
+		}
+		if(e.which == 68) {
+		  $("button.keyboardD").toggleClass('active');
+		}
+		if(e.which == 70) {
+		  $("button.keyboardF").toggleClass('active');
+		}
+
+
+	}
+);
+
+
+$( document ).ready(function() {
+adlib.init({'urlPrefix':'https://s3.eu-west-2.amazonaws.com/jamesmaltby/codepen/audio/', 'sm2url':'/swf/'});
+     adlib.load(['cowbell.mp3'],'cowbell');
+		adlib.load(['crash.mp3'],'crash');
+		adlib.load(['hihat.mp3'],'hihat');
+		adlib.load(['hihatopen.mp3'],'hihatopen');
+
+		adlib.load(['kick.mp3'],'kick');
+		adlib.load(['snare.mp3'],'snare1');
+		adlib.load(['snare2.mp3'],'snare2');
+		adlib.load(['rim.mp3'],'rim');
+		
+		if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+ 			$("button").removeAttr("onmousedown");
+		}
+});
